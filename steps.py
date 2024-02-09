@@ -23,14 +23,14 @@ def run_get_music_refmask(output_stt, output_end, x, y, z, r):
 
 def load_refmask(hid):
     # load refmask
-    pos = np.loadtxt("./{hid:d}/music_region_file.txt")
+    pos = np.loadtxt(f"./{hid:d}/music_region_file.txt")
 
     return pos
 
 
-def get_zoom_region():
+def get_zoom_region(hid):
     # get zoom region
-    stt_pos = load_refmask()
+    stt_pos = load_refmask(hid)
 
     median_ctr = np.median(stt_pos, axis=0)
 

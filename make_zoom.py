@@ -33,7 +33,7 @@ nml_name = "cosmo.nml"
 
 mass_bin = f"mh1e{int(np.log10(tgt_mvir)):d}"
 
-sim_path="/data101/jlewis/sims/"
+sim_path = "/data101/jlewis/sims/"
 zoom_path = f"{sim_path}/dust_fid/lvlmax_{lvlmax:d}/{mass_bin}/"
 zoom_name = f"id{tgt_hid}"
 
@@ -47,19 +47,19 @@ os.makedirs(os.path.join(zoom_path, zoom_name), exist_ok=True)
 
 
 # get region containing particles
-get_refmask=False
-#check if file exists for current hid?
-if os.path.exists(f'./{tgt_hid:d}'):
+get_refmask = False
+# check if file exists for current hid?
+if os.path.exists(f"./{tgt_hid:d}"):
 
-    if not os.path.exists(f'./{tgt_hid:d}/music_region_file.txt'):
-        get_refmask=True
+    if not os.path.exists(f"./{tgt_hid:d}/music_region_file.txt"):
+        get_refmask = True
 
 else:
 
-    os.makedirs(f'./{tgt_hid:d}')
-    get_refmask=True
+    os.makedirs(f"./{tgt_hid:d}")
+    get_refmask = True
 
-#if not run get_music_refmask
+# if not run get_music_refmask
 if get_refmask:
     run_get_music_refmask(
         os.path.join(HAGN_PATH, "output_00000"),
@@ -70,9 +70,8 @@ if get_refmask:
         r,
     )
 
-    #then mv to ./{tgt_hid}
-    move("music_region_file.txt",'./{tgt_hid:d}/.')
-
+    # then mv to ./{tgt_hid}
+    move("music_region_file.txt", f"./{tgt_hid:d}/.")
 
 
 # print("ran get_music_refmask")
@@ -95,7 +94,7 @@ for ilvl, lvl in enumerate(z_ic_lvls):
 
     rzoom = (
         # np.int32(rmax + 2 * (2 + len(z_ic_lvls) - ilvl)) * 2
-        np.int32(rmax * 2**lvl + 2 * (2 + len(z_ic_lvls) - ilvl))
+        np.int32(rmax * 2**lvl + 2 * (3 + len(z_ic_lvls) - ilvl))
     ) * 2  # 4 cells to include all ramses octs w particles
 
     # print(rzoom, rzoom / 2**lvl, rmax)
@@ -104,7 +103,7 @@ for ilvl, lvl in enumerate(z_ic_lvls):
     if not os.path.exists(ic_out_path):
         os.makedirs(ic_out_path)
 
-    if not os.path.exists(os.path.join(ic_out_path,'ic_deltab')):
+    if not os.path.exists(os.path.join(ic_out_path, "ic_deltab")):
         extract_grafic_call(
             os.path.join(HAGN_FID_IC_PATH, f"{2**lvl:d}"),
             ic_out_path,
@@ -146,4 +145,4 @@ copy2("./ramses_swind_Sikey.dat", os.path.join(zoom_path, zoom_name))
 
 print("done!")
 
-print("sim setup at %s", %(os.path.join(zoom_path, zoom_name)))
+print("sim setup at %s" % (os.path.join(zoom_path, zoom_name)))
