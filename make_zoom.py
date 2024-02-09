@@ -34,7 +34,7 @@ nml_name = "cosmo.nml"
 mass_bin = f"mh1e{int(np.log10(tgt_mvir)):d}"
 
 sim_path = "/data101/jlewis/sims/"
-zoom_path = f"{sim_path}/dust_fid/lvlmax_{lvlmax:d}/{mass_bin}/"
+zoom_path = os.path.join(sim_path, f"dust_fid/lvlmax_{lvlmax:d}", mass_bin)
 zoom_name = f"id{tgt_hid}"
 
 zoom_IC_path = os.path.join(sim_path, "ICs", zoom_name)
@@ -118,7 +118,7 @@ print("made ICs")
 nml = get_nml_params(tmplt_nml_path, "cosmo.nml")
 
 zoom_nml(nml, baryctr, rmax)
-zoom_ic_nml(nml, HAGN_FID_IC_PATH, os.path.join(zoom_path, zoom_name), z_ic_lvls)
+zoom_ic_nml(nml, HAGN_FID_IC_PATH, zoom_IC_path, z_ic_lvls)
 apply_var_params(nml, params)
 
 write(nml, os.path.join(zoom_path, zoom_name, nml_name), force=True)
