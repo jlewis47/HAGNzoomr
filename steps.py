@@ -21,9 +21,9 @@ def run_get_music_refmask(output_stt, output_end, x, y, z, r):
     return 1
 
 
-def load_refmask():
+def load_refmask(hid):
     # load refmask
-    pos = np.loadtxt("music_region_file.txt")
+    pos = np.loadtxt("./{hid:d}/music_region_file.txt")
 
     return pos
 
@@ -74,7 +74,8 @@ def zoom_ic_nml(nml, fid_path, zoom_path, lvls):
 
         lvl_res = 2**lvl
 
-        lvl_fnames.append(os.path.join(zoom_path, "ZoomIC", f"{lvl_res:d}Cropped"))
+        # lvl_fnames.append(os.path.join("./", "ZoomIC", f"{lvl_res:d}Cropped"))
+        lvl_fnames.append(os.path.join(zoom_path, f"{lvl_res:d}Cropped"))
 
     fnames = [fid_fname] + lvl_fnames
 

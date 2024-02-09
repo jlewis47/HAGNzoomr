@@ -2,32 +2,42 @@ import numpy as np
 import os
 from steps import *
 
-from shutil import copy2
+from shutil import copy2, move
 
 from gremlin.read_sim_params import get_nml_params
 from f90nml import write
 
-tmplt_nml_path = "/data101/jlewis/sims/dust_fid/mh1e11/id292074"
+tmplt_nml_path = "/data101/jlewis/sims/dust_fid/lvlmax_22/mh1e11/id292074"
 ramses_exec_path = "/home/jlewis/ramses-yomp/bin/ramses_refmask_qhil3d"
 
 ramses_exec = ramses_exec_path.split("/")[-1]
 
-tgt_hid = 292074
-tgt_pos = 3.125139e-01, 5.205711e-01, 5.573223e-01
+tgt_hid = 33051
+tgt_pos = 3.123425e-02, 2.192202e-01, 3.037270e-01
 tgt_rvir = 1.093000e-03
-tgt_mvir = 6.536000e11
+tgt_mvir = 5.152000e12
 tgt_snap = 197
+
+lvlmax = 20
 
 params = {}
 params["lvlmin"] = 7
-params["lvlmax"] = 22
+params["lvlmax"] = lvlmax
+
+# stuff for 200pc/lvlvmax=20 res
+params["n_star"] = 1
+params["sf_model"] = 0
+params["eps_stars"] = 0.1
 
 nml_name = "cosmo.nml"
 
 mass_bin = f"mh1e{int(np.log10(tgt_mvir)):d}"
 
-zoom_path = f"/data101/jlewis/sims/dust_fid/{mass_bin}/"
+sim_path="/data101/jlewis/sims/"
+zoom_path = f"{sim_path}/dust_fid/lvlmax_{lvlmax:d}/{mass_bin}/"
 zoom_name = f"id{tgt_hid}"
+
+zoom_IC_path = os.path.join(sim_path, "ICs", zoom_name)
 
 nnodes = 1
 tpn = 128
@@ -37,19 +47,37 @@ os.makedirs(os.path.join(zoom_path, zoom_name), exist_ok=True)
 
 
 # get region containing particles
+get_refmask=False
+#check if file exists for current hid?
+if os.path.exists(f'./{tgt_hid:d}'):
 
-# run_get_music_refmask(
-#     os.path.join(HAGN_PATH, "output_00000"),
-#     os.path.join(HAGN_PATH, f"output_{tgt_snap:05d}"),
-#     tgt_pos[0],
-#     tgt_pos[1],
-#     tgt_pos[2],
-#     r,
-# )
+    if not os.path.exists(f'./{tgt_hid:d}/music_region_file.txt'):
+        get_refmask=True
+
+else:
+
+    os.makedirs(f'./{tgt_hid:d}')
+    get_refmask=True
+
+#if not run get_music_refmask
+if get_refmask:
+    run_get_music_refmask(
+        os.path.join(HAGN_PATH, "output_00000"),
+        os.path.join(HAGN_PATH, f"output_{tgt_snap:05d}"),
+        tgt_pos[0],
+        tgt_pos[1],
+        tgt_pos[2],
+        r,
+    )
+
+    #then mv to ./{tgt_hid}
+    move("music_region_file.txt",'./{tgt_hid:d}/.')
+
+
 
 # print("ran get_music_refmask")
 
-baryctr, rmax = get_zoom_region()
+baryctr, rmax = get_zoom_region(tgt_hid)
 
 print("got zoom region")
 
@@ -72,16 +100,17 @@ for ilvl, lvl in enumerate(z_ic_lvls):
 
     # print(rzoom, rzoom / 2**lvl, rmax)
 
-    ic_out_path = os.path.join(zoom_path, zoom_name, "ZoomIC", f"{2**lvl:d}Cropped")
+    ic_out_path = os.path.join(zoom_IC_path, f"{2**lvl:d}Cropped")
     if not os.path.exists(ic_out_path):
         os.makedirs(ic_out_path)
 
-    extract_grafic_call(
-        os.path.join(HAGN_FID_IC_PATH, f"{2**lvl:d}"),
-        ic_out_path,
-        np.int32([xzoom, yzoom, zzoom]),
-        int(rzoom),
-    )
+    if not os.path.exists(os.path.join(ic_out_path,'ic_deltab')):
+        extract_grafic_call(
+            os.path.join(HAGN_FID_IC_PATH, f"{2**lvl:d}"),
+            ic_out_path,
+            np.int32([xzoom, yzoom, zzoom]),
+            int(rzoom),
+        )
 
 print("made ICs")
 
@@ -116,3 +145,5 @@ print("copied ramses exec")
 copy2("./ramses_swind_Sikey.dat", os.path.join(zoom_path, zoom_name))
 
 print("done!")
+
+print("sim setup at %s", %(os.path.join(zoom_path, zoom_name)))
