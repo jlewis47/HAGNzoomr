@@ -8,6 +8,7 @@ from gremlin.read_sim_params import get_nml_params
 from f90nml import write
 
 # need to add support for halos on edge of box... i.e. recentre to 0.5,0.5,0.5
+# can use centre_grafic.f90 from ramses/utils/f90
 
 tmplt_nml_path = "/data101/jlewis/sims/dust_fid/lvlmax_22/mh1e11/id292074"
 ramses_exec_path = "/home/jlewis/ramses-yomp/bin/ramses_refmask_qhil3d"
