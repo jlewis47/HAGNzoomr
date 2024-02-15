@@ -34,17 +34,25 @@ def get_zoom_region(hid):
 
     median_ctr = np.median(stt_pos, axis=0)
 
+    # print(np.mean(stt_pos, axis=0))
+
     too_large = np.abs(stt_pos - median_ctr) > 0.5
 
-    up = stt_pos[too_large] > 0.5
-    dw = stt_pos[too_large] <= 0.5
+    up = stt_pos > 0.5
+    dw = stt_pos <= 0.5
 
-    stt_pos[too_large][up] -= 1
-    stt_pos[too_large][dw] += 1
+    # print(stt_pos)
+    # print(stt_pos[too_large])
+
+    stt_pos[too_large * up] -= 1
+    stt_pos[too_large * dw] += 1
+
+    # print(stt_pos[too_large])
 
     baryctr = np.mean(stt_pos, axis=0)
 
     rmax = np.max(np.abs(stt_pos - baryctr))
+    # print(median_ctr, baryctr, rmax)
 
     # reflect back into box if overstep
     for idim in range(3):
@@ -116,6 +124,7 @@ def create_sh(
     ntasks=None,
     nnodes=None,
     wt=None,
+    name=None,
 ):
 
     lines = []
@@ -161,7 +170,11 @@ def create_sh(
             nnodes = 1
 
         node_line = np.where(["nodes=" in l for l in lines])[0][0]
-        lines[node_line] = f"#PBS -l nodes={nnodes}:ppn=128,walltime={wt}"
+        lines[node_line] = f"#PBS -l nodes={nnodes}:ppn=128,walltime={wt}\n"
+
+    if name is not None:
+        name_line = np.where(["#PBS -N" in l for l in lines])[0][0]
+        lines[name_line] = f"#PBS -N {name}\n"
 
     with open(os.path.join(tgt_path, "run.sh"), "w") as f:
         f.writelines(lines)

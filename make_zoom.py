@@ -7,16 +7,20 @@ from shutil import copy2, move
 from gremlin.read_sim_params import get_nml_params
 from f90nml import write
 
+# need to add support for halos on edge of box... i.e. recentre to 0.5,0.5,0.5
+
 tmplt_nml_path = "/data101/jlewis/sims/dust_fid/lvlmax_22/mh1e11/id292074"
 ramses_exec_path = "/home/jlewis/ramses-yomp/bin/ramses_refmask_qhil3d"
 
 ramses_exec = ramses_exec_path.split("/")[-1]
 
-tgt_hid = 33051
-tgt_pos = 3.123425e-02, 2.192202e-01, 3.037270e-01
-tgt_rvir = 1.093000e-03
-tgt_mvir = 5.152000e12
+tgt_hid = 1589
+tgt_pos = 1.434901e-01, 9.959888e-01, 2.404712e-01
+tgt_rvir = 3.942050e-03
+tgt_mvir = 6.090000e12
 tgt_snap = 197
+
+overwrite = True
 
 lvlmax = 20
 
@@ -28,6 +32,10 @@ params["lvlmax"] = lvlmax
 params["n_star"] = 1
 params["sf_model"] = 0
 params["eps_stars"] = 0.1
+
+params["ngridmax"] = 150000
+params["npartmax"] = 500000
+params["nsinkmax"] = 500
 
 nml_name = "cosmo.nml"
 
@@ -94,7 +102,7 @@ for ilvl, lvl in enumerate(z_ic_lvls):
 
     rzoom = (
         # np.int32(rmax + 2 * (2 + len(z_ic_lvls) - ilvl)) * 2
-        np.int32(rmax * 2**lvl + 2 * (3 + len(z_ic_lvls) - ilvl))
+        np.int32(rmax * 2**lvl + 2 * (2 + len(z_ic_lvls) - ilvl))
     ) * 2  # 4 cells to include all ramses octs w particles
 
     # print(rzoom, rzoom / 2**lvl, rmax)
@@ -103,7 +111,7 @@ for ilvl, lvl in enumerate(z_ic_lvls):
     if not os.path.exists(ic_out_path):
         os.makedirs(ic_out_path)
 
-    if not os.path.exists(os.path.join(ic_out_path, "ic_deltab")):
+    if not os.path.exists(os.path.join(ic_out_path, "ic_deltab")) or overwrite:
         extract_grafic_call(
             os.path.join(HAGN_FID_IC_PATH, f"{2**lvl:d}"),
             ic_out_path,
@@ -133,6 +141,7 @@ create_sh(
     nml=nml_name,
     ntasks=nnodes * tpn,
     nnodes=nnodes,
+    name=f"zoom_{zoom_name}",
 )
 
 print("wrote submission script")
