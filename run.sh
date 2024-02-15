@@ -10,7 +10,7 @@ module load inteloneapi/2022.2
 date
 
 cd /
-mpirun -genv FI_PROVIDER=tcp -np 256 ./ramses3d ./cosmo.nml >& run_00000.log
+mpirun -genv FI_PROVIDER=tcp -np 256 ./ramses3d ./cosmo.nml >>& run_00000.log
 
 date
 
