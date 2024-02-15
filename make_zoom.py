@@ -15,18 +15,19 @@ ramses_exec_path = "/home/jlewis/ramses-yomp/bin/ramses_refmask_qhil3d"
 
 ramses_exec = ramses_exec_path.split("/")[-1]
 
-tgt_hid = 1589
-tgt_pos = 1.434901e-01, 9.959888e-01, 2.404712e-01
-tgt_rvir = 3.942050e-03
-tgt_mvir = 6.090000e12
+tgt_hid = 147479
+tgt_pos = 6.885145e-01, 5.136512e-01, 1.615513e-01
+tgt_rvir = 2.955360e-03
+tgt_mvir = 2.580000e12
 tgt_snap = 197
 
 overwrite = True
 
 lvlmax = 20
+lvlmin = 7
 
 params = {}
-params["lvlmin"] = 7
+params["lvlmin"] = lvlmin
 params["lvlmax"] = lvlmax
 
 # stuff for 200pc/lvlvmax=20 res
@@ -89,10 +90,14 @@ baryctr, rmax = get_zoom_region(tgt_hid)
 
 print("got zoom region")
 
+centre = False
+if np.any([baryctr + rmax > 1, baryctr - rmax < 0]):
+    centre = True
+
 # make ics
 
 # zoom ic levels
-z_ic_lvls = [n for n in range(8, 12)]
+z_ic_lvls = [n for n in range(lvlmin, 12)]
 # z_ic_lvls = [n for n in range(8, 10)]
 
 for ilvl, lvl in enumerate(z_ic_lvls):
@@ -120,14 +125,22 @@ for ilvl, lvl in enumerate(z_ic_lvls):
             int(rzoom),
         )
 
+        if centre:
+            centre_grafic_call(ic_out_path, ic_out_path, baryctr)
+
 print("made ICs")
 
 # nml
 
 nml = get_nml_params(tmplt_nml_path, "cosmo.nml")
 
-zoom_nml(nml, baryctr, rmax)
-zoom_ic_nml(nml, HAGN_FID_IC_PATH, zoom_IC_path, z_ic_lvls)
+zoom_ctr = np.copy(baryctr)
+if centre:
+    zoom_ctr = np.array([0.5, 0.5, 0.5])
+
+zoom_nml(nml, zoom_ctr, rmax)
+# zoom_ic_nml(nml, HAGN_FID_IC_PATH, zoom_IC_path, z_ic_lvls)
+zoom_ic_nml(nml, zoom_IC_path, z_ic_lvls)
 apply_var_params(nml, params)
 
 write(nml, os.path.join(zoom_path, zoom_name, nml_name), force=True)

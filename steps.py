@@ -73,9 +73,9 @@ def zoom_nml(nml, baryctr, rmax):
     nml["REFINE_PARAMS"]["rzoom"] = rmax
 
 
-def zoom_ic_nml(nml, fid_path, zoom_path, lvls):
+def zoom_ic_nml(nml, zoom_path, lvls):
 
-    fid_fname = os.path.join(fid_path, f"{int(2**(lvls[0]-1)):d}")
+    # fid_fname = os.path.join(fid_path, f"{int(2**(lvls[0]-1)):d}")
 
     lvl_fnames = []
     for lvl in lvls:
@@ -85,11 +85,11 @@ def zoom_ic_nml(nml, fid_path, zoom_path, lvls):
         # lvl_fnames.append(os.path.join("./", "ZoomIC", f"{lvl_res:d}Cropped"))
         lvl_fnames.append(os.path.join(zoom_path, f"{lvl_res:d}Cropped"))
 
-    fnames = [fid_fname] + lvl_fnames
+    # fnames = [fid_fname] + lvl_fnames
 
     del nml["init_params"]["initfile"]
 
-    for ifname, fname in enumerate(fnames):
+    for ifname, fname in enumerate(lvl_fnames):
 
         nml["init_params"][f"initfile({ifname+1:d})"] = fname
 
@@ -105,11 +105,25 @@ def apply_var_params(nml, params):
 
 def extract_grafic_call(fin, fout, baryctr, rmax):
     # print(fin, fout, baryctr, rmax)
-    cmd = f"/home/jlewis/extract_grafic/extract_grafic_notinteractive {fin} {fout} {baryctr[0]:d} {baryctr[1]:d} {baryctr[2]:d} {rmax:d}"
+    cmd = f"./extract_grafic_notinteractive {fin} {fout} {baryctr[0]:d} {baryctr[1]:d} {baryctr[2]:d} {rmax:d}"
 
     print(cmd)
     # os.system(cmd)
     with open("extract_grafic.log", "w") as f:
+        subprocess.run(cmd.split(), stdout=f, stderr=f)
+
+    return 1
+
+
+def centre_grafic_call(fin, fout, ctr):
+    # print(fin, fout, ctr)
+    cmd = (
+        f"./extract_grafic_notinteractive {fin} {fout} {ctr[0]:d} {ctr[1]:d} {ctr[2]:d}"
+    )
+
+    print(cmd)
+    # os.system(cmd)
+    with open("centre_grafic.log", "w") as f:
         subprocess.run(cmd.split(), stdout=f, stderr=f)
 
     return 1
