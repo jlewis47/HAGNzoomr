@@ -14,7 +14,7 @@ date
 cur_nb=$(printf "%d" $(find . -maxdepth 1 -name 'run_*.log' -type f | cut -d _ -f 2 | cut -d . -f 1 | sort | tail -n 1))
 nb=$(printf "%05d" $((cur_nb+1)))
 
-cd /
+cd / #this gets replaced
 mpirun -genv FI_PROVIDER=tcp -np 256 ./ramses3d ./cosmo.nml >& run_$nb.log
 
 date
