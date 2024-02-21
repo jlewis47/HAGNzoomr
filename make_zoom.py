@@ -21,22 +21,22 @@ tgt_rvir = 2.955360e-03
 tgt_mvir = 2.580000e12
 tgt_snap = 197
 
-overwrite = True
+overwrite = False
 
 lvlmax = 20
 lvlmin = 7
 
 params = {}
-params["lvlmin"] = lvlmin
-params["lvlmax"] = lvlmax
+params["levelmin"] = lvlmin
+params["levelmax"] = lvlmax
 
 # stuff for 200pc/lvlvmax=20 res
 params["n_star"] = 1
 params["sf_model"] = 0
-params["eps_stars"] = 0.1
+params["eps_star"] = 0.1
 
 params["ngridmax"] = 150000
-params["npartmax"] = 500000
+params["npartmax"] = 2500000
 params["nsinkmax"] = 500
 
 nml_name = "cosmo.nml"

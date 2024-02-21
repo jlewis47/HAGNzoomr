@@ -95,17 +95,26 @@ def zoom_ic_nml(nml, zoom_path, lvls):
 
 
 def apply_var_params(nml, params):
-    for key, val in params.items():
+    found = np.zeros(len(params.keys()))
+    for ikey, (key, val) in enumerate(params.items()):
         for nml_key in nml.keys():
             if key in nml[nml_key]:
                 nml[nml_key][key] = val
+                found[ikey] = 1
+
+    if np.any(found == 0):
+        print(
+            "I didn't find all parameters in the nml files... please check their spelling and values"
+        )
+        print(",".join(np.asarray(list(params.keys()))[found == 0]))
+        assert False, "missing parameters in nml file"
 
     return 1
 
 
 def extract_grafic_call(fin, fout, baryctr, rmax):
     # print(fin, fout, baryctr, rmax)
-    cmd = f"./extract_grafic_notinteractive {fin} {fout} {baryctr[0]:d} {baryctr[1]:d} {baryctr[2]:d} {rmax:d}"
+    cmd = f"./extract_grafic {fin} {fout} {baryctr[0]:d} {baryctr[1]:d} {baryctr[2]:d} {rmax:d}"
 
     print(cmd)
     # os.system(cmd)
@@ -117,9 +126,7 @@ def extract_grafic_call(fin, fout, baryctr, rmax):
 
 def centre_grafic_call(fin, fout, ctr):
     # print(fin, fout, ctr)
-    cmd = (
-        f"./extract_grafic_notinteractive {fin} {fout} {ctr[0]:d} {ctr[1]:d} {ctr[2]:d}"
-    )
+    cmd = f"./extract_grafic {fin} {fout} {ctr[0]:d} {ctr[1]:d} {ctr[2]:d}"
 
     print(cmd)
     # os.system(cmd)
