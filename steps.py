@@ -119,12 +119,12 @@ def get_zoom_region(hid, zoom_type="ellipsoid"):
     # now diagonilize tensor to get rotation matrix and eigenvalues
     # 3d recap plot
     # fig = plt.figure()
-    # # ax = fig.add_subplot(111, projection="3d")
+    # ax = fig.add_subplot(111, projection="3d")
     # fig, ax = plt.subplots(3, 1, figsize=(8, 8), sharex=True, sharey=True)
 
-    # ax[0].scatter(coords[:, 0], coords[:, 1], alpha=0.01)
-    # ax[1].scatter(coords[:, 1], coords[:, 2], alpha=0.01)
-    # ax[2].scatter(coords[:, 0], coords[:, 2], alpha=0.01)
+    # ax[0].scatter(coords[:, 0] + baryctr[0], coords[:, 1] + baryctr[1], alpha=0.01)
+    # ax[1].scatter(coords[:, 1] + baryctr[1], coords[:, 2] + baryctr[2], alpha=0.01)
+    # ax[2].scatter(coords[:, 0] + baryctr[0], coords[:, 2] + baryctr[2], alpha=0.01)
 
     # # print(stt_pos[too_large])
 
@@ -177,23 +177,23 @@ def get_zoom_region(hid, zoom_type="ellipsoid"):
     # back to cartesian
     new_ctr = np.dot(rot_ctr, rot_m.T)
 
-    # print(baryctr, new_ctr)
-
     # ax.scatter([0], [0], [0], s=50, marker="x", c="r")
     # ax.scatter(new_ctr[0], new_ctr[1], new_ctr[2], s=50, marker="+", c="r")
-    # ax[0].scatter([0], [0], s=50, marker="x", c="r")
-    # ax[0].scatter(new_ctr[0], new_ctr[1], s=50, marker="+", c="r")
-    # ax[1].scatter([0], [0], marker="x", c="r")
-    # ax[1].scatter(new_ctr[1], new_ctr[2], s=50, marker="+", c="r")
-    # ax[2].scatter([0], [0], marker="x", c="r")
-    # ax[2].scatter(new_ctr[0], new_ctr[2], s=50, marker="+", c="r")
+    # ax[0].scatter(baryctr[0], baryctr[1], s=50, marker="x", c="r")
+    # ax[0].scatter(new_ctr[0]+baryctr[0], new_ctr[1]+baryctr[1], s=50, marker="+", c="r")
+    # ax[1].scatter(baryctr[1], baryctr[2], marker="x", c="r")
+    # ax[1].scatter(new_ctr[1]+baryctr[1], new_ctr[2]+baryctr[2], s=50, marker="+", c="r")
+    # ax[2].scatter(baryctr[0], baryctr[2], marker="x", c="r")
+    # ax[2].scatter(new_ctr[0]+baryctr[0], new_ctr[2]+baryctr[2], s=50, marker="+", c="r")
 
     # # get max distance from barycentre
-    # rmax = np.max(np.abs(coords))
-    # print(rmax)
+    rmax = np.max(np.abs(coords))
+    print(rmax)
     # print(np.max(np.abs(rot_coords - rot_ctr)))
     # # from new centre
     new_ctr_coords = -coords + new_ctr
+    new_ctr += baryctr
+    print(baryctr, new_ctr)
 
     # if zoom_type == "sphere":
     # print(np.linalg.norm(new_ctr_coords, axis=1).shape)
@@ -259,15 +259,16 @@ def get_zoom_region(hid, zoom_type="ellipsoid"):
         # bmax = 0.08
         # cmax = 0.1
 
-        rr = (
-            new_ctr_coords[:, 0] ** 2 / amax**2
-            + new_ctr_coords[:, 1] ** 2 / bmax**2
-            + new_ctr_coords[:, 2] ** 2 / cmax**2
-        )
+        # rr = (
+        #     new_ctr_coords[:, 0] ** 2 / amax**2
+        #     + new_ctr_coords[:, 1] ** 2 / bmax**2
+        #     + new_ctr_coords[:, 2] ** 2 / cmax**2
+        # )
 
         # print(rr.min(), rr.max())
 
         print(f"After {niter:d} grow iterations, I found:")
+        print(new_ctr)
         print(amax, bmax, cmax)
 
     # ax[0].scatter(new_ctr_coords[:, 0], new_ctr_coords[:, 1], alpha=0.01)  # , c=rr)
@@ -296,7 +297,7 @@ def get_zoom_region(hid, zoom_type="ellipsoid"):
     # ax[1].add_patch(yzcirl)
     # ax[2].add_patch(xzcirl)
 
-    # print(new_ctr_coords[0].min(), new_ctr_coords[0].max())
+    # # print(new_ctr_coords[0].min(), new_ctr_coords[0].max())
 
     # fig.savefig("eigen.png")
 
@@ -364,6 +365,10 @@ def get_zoom_region(hid, zoom_type="ellipsoid"):
     #         baryctr[idim] -= 1
     #     elif baryctr[idim] < 0:
     #         baryctr[idim] += 1
+    # new_ctr -= baryctr
+
+    # print(baryctr, new_ctr, rmax)
+
     for idim in range(3):
         if new_ctr[idim] > 1.0:
             new_ctr[idim] -= 1
@@ -373,6 +378,7 @@ def get_zoom_region(hid, zoom_type="ellipsoid"):
     # print("")
 
     # print(baryctr, new_ctr, rot_ctr)
+    # print(baryctr, new_ctr, rmax)
 
     # return baryctr, rmax
 
@@ -394,6 +400,7 @@ def zoom_ellipsoid_nml(nml, baryctr, amax, bmax, cmax):
     nml["REFINE_PARAMS"]["xzoom"] = baryctr[0]
     nml["REFINE_PARAMS"]["yzoom"] = baryctr[1]
     nml["REFINE_PARAMS"]["zzoom"] = baryctr[2]
+    del nml["REFINE_PARAMS"]["rzoom"]
     nml["REFINE_PARAMS"]["azoom"] = amax
     nml["REFINE_PARAMS"]["bzoom"] = bmax
     nml["REFINE_PARAMS"]["czoom"] = cmax
@@ -453,7 +460,7 @@ def extract_grafic_call(fin, fout, baryctr, rmax):
 def extract_grafic_cuboid_call(fin, fout, baryctr, ellipsoid):
     (amax, bmax, cmax) = ellipsoid
     # print(fin, fout, baryctr, rmax)
-    cmd = f"./extract_grafic_cuboid {fin} {fout} {baryctr[0]:d} {baryctr[1]:d} {baryctr[2]:d} {amax:d}, {bmax:d}, {cmax:d}"
+    cmd = f"./extract_grafic_cuboid {fin} {fout} {baryctr[0]:d} {baryctr[1]:d} {baryctr[2]:d} {amax:d} {bmax:d} {cmax:d}"
 
     print(cmd)
     # os.system(cmd)

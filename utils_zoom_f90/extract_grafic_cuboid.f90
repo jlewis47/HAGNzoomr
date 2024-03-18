@@ -37,8 +37,8 @@ program extract_grafic
    character*140,dimension(14)::filename
 
    narg = iargc()
-   IF(narg .NE. 6)THEN
-      write(*,*)'You should type: a.out input output x y z r'
+   IF(narg .NE. 8)THEN
+      write(*,*)'You should type: a.out input output x y z a b c'
       write(*,*)'where directory input should contain GRAFIC files'
       write(*,*)'and directory output should be empty'
       STOP
@@ -57,8 +57,8 @@ program extract_grafic
    if (input == output) then
       write(*,*)'If input and output directories are the same'
       write(*,*)'input files will be erased by output ones'
-      write(*,*)'so type DIFFERENT directories !!!!'
-      stop
+      ! write(*,*)'so type DIFFERENT directories !!!!'
+      ! stop
    endif
 
    !  COMPUTE FILES TO OPEN AND TO WRITE
@@ -104,7 +104,8 @@ program extract_grafic
    !read r in np3_cube
    read(c,*) np3_cube
 
-   write(*,*) np1_cube,np2_cube,np3_cube
+   ! write(*,*) a,b,c
+   ! write(*,*) np1_cube,np2_cube,np3_cube
 
    min_x=max(xc1-np1_cube/2,0)
    max_x=min(xc1+np1_cube/2,np1)
@@ -112,6 +113,7 @@ program extract_grafic
    max_y=min(xc2+np2_cube/2,np2)
    min_z=max(xc3-np3_cube/2,0)
    max_z=min(xc3+np3_cube/2,np3)
+   ! write(*,*) min_x,max_x,min_y,max_y,min_z,max_z
    np1_cube=max_x-min_x
    np2_cube=max_y-min_y
    np3_cube=max_z-min_z

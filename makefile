@@ -10,7 +10,7 @@ CFLAGS=-Ofast -cpp
 
 vpath %.f90 $(fpath)
 
-LFLAGS=
+LFLAGS= #-g -check all -traceback -O0
 
 MODOBJ=
 

@@ -2,7 +2,7 @@ import numpy as np
 import os
 from steps import *
 
-from shutil import copy2, move
+from shutil import copy2, move, rmtree
 
 from gremlin.read_sim_params import get_nml_params
 from f90nml import write
@@ -22,9 +22,9 @@ tgt_snap = 197
 supercat = make_super_cat(197, "/data101/jlewis/hagn/super_cats")
 
 # tgt_hid = 74099
-# tgt_hid = 147479
+tgt_hid = 147479
 # tgt_hid = 13310
-tgt_hid = 68373
+# tgt_hid = 68373
 # tgt_hid = 326421
 # tgt_hid = 194228
 # tgt_hid = 242704
@@ -115,9 +115,12 @@ if get_refmask:
 # print("ran get_music_refmask")
 
 baryctr, amax, bmax, cmax = get_zoom_region(tgt_hid, zoom_type="ellipsoid")
-# baryctr, rmax = get_zoom_region(tgt_hid)
+# baryctr, rmax = get_zoom_region(tgt_hid, zoom_type="sphere")
+# rmax = np.max([amax, bmax, cmax])
+# cmax = 0.09
 
 
+print(baryctr)
 print(f"amax:{amax:f}, bmax:{bmax:f}, cmax:{cmax:f} r:{r:f}, tgt_rvir:{tgt_rvir:f}")
 
 print("got zoom region")
@@ -125,16 +128,18 @@ print("got zoom region")
 
 zoom_ctr = np.copy(baryctr)
 
-centre = False
-# if np.any([baryctr + rmax > 1, baryctr - rmax < 0]):
+centre = True
+
+# print([baryctr - 2 * rmax < 0, baryctr + 2 * rmax > 1])
+
 if np.any(
     [
-        baryctr[0] + amax > 1,
-        baryctr[0] - amax < 0,
-        baryctr[1] + bmax > 1,
-        baryctr[1] - bmax < 0,
-        baryctr[2] + cmax > 1,
-        baryctr[2] - cmax < 0,
+        baryctr[0] + amax * 2 > 1,
+        baryctr[0] - amax * 2 < 0,
+        baryctr[1] + bmax * 2 > 1,
+        baryctr[1] - bmax * 2 < 0,
+        baryctr[2] + cmax * 2 > 1,
+        baryctr[2] - cmax * 2 < 0,
     ]
 ):
     centre = True
@@ -144,7 +149,10 @@ if np.any(
 
 # zoom ic levels
 z_ic_lvls = [n for n in range(lvlmin, 12)]
+# z_ic_lvls = [n for n in range(lvlmin, 10)]
 # z_ic_lvls = [n for n in range(8, 10)]
+
+rmult = 2
 
 for ilvl, lvl in enumerate(z_ic_lvls):
 
@@ -156,15 +164,19 @@ for ilvl, lvl in enumerate(z_ic_lvls):
     azoom = (
         # np.int32(rmax + 2 * (2 + len(z_ic_lvls) - ilvl)) * 2
         np.int32(amax * 2**lvl + boost)
-    ) * 2  # 4 cells to include all ramses octs w particles
+    ) * rmult  # 4 cells to include all ramses octs w particles
     bzoom = (
         # np.int32(rmax + 2 * (2 + len(z_ic_lvls) - ilvl)) * 2
         np.int32(bmax * 2**lvl + boost)
-    ) * 2  # 4 cells to include all ramses octs w particles
+    ) * rmult  # 4 cells to include all ramses octs w particles
     czoom = (
         # np.int32(rmax + 2 * (2 + len(z_ic_lvls) - ilvl)) * 2
         np.int32(cmax * 2**lvl + boost)
-    ) * 2  # 4 cells to include all ramses octs w particles
+    ) * rmult  # 4 cells to include all ramses octs w particles
+
+    # rzoom = (
+    #     np.int32(rmax * 2**lvl + boost)
+    # ) * rmult  # 4 cells to include all ramses octs w particles
 
     # print(rzoom, rzoom / 2**lvl, rmax)
     # print(boost)
@@ -174,6 +186,10 @@ for ilvl, lvl in enumerate(z_ic_lvls):
     ic_out_path = os.path.join(zoom_IC_path, f"{2**lvl:d}Cropped")
     if not os.path.exists(ic_out_path):
         os.makedirs(ic_out_path)
+
+    ctr_out_path = os.path.join(zoom_IC_path, f"{2**lvl:d}Ctr")
+    if not os.path.exists(ctr_out_path):
+        os.makedirs(ctr_out_path)
 
     if not os.path.exists(os.path.join(ic_out_path, "ic_deltab")) or overwrite:
 
@@ -186,9 +202,9 @@ for ilvl, lvl in enumerate(z_ic_lvls):
 
         extract_path = src_dir
         if centre:
-            centre_grafic_call(src_dir, ic_out_path, [xzoom, yzoom, zzoom])
+            centre_grafic_call(src_dir, ctr_out_path, [xzoom, yzoom, zzoom])
             xzoom, yzoom, zzoom = np.int32(np.asarray([0.5, 0.5, 0.5]) * 2**lvl)
-            extract_path = ic_out_path
+            extract_path = ctr_out_path
 
         else:
             ftocp = os.listdir(src_dir)
@@ -204,6 +220,17 @@ for ilvl, lvl in enumerate(z_ic_lvls):
                 np.int32([xzoom, yzoom, zzoom]),
                 np.int32([azoom, bzoom, czoom]),
             )
+
+            # extract_grafic_call(
+            #     extract_path,
+            #     ic_out_path,
+            #     np.int32([xzoom, yzoom, zzoom]),
+            #     int(rzoom),
+            # )
+
+            # remove centered file
+            if centre:
+                rmtree(ctr_out_path)
 
 
 print("made ICs")

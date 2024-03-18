@@ -40,7 +40,7 @@ program center_grafic
    logical::ok,found
 
    narg = command_argument_count()
-   IF(narg .NE. 2)THEN
+   IF(narg .NE. 5)THEN
       write(*,*)'You should type: a.out input output'
       write(*,*)'where directory input should contain GRAFIC files'
       write(*,*)'and directory output should be empty'
