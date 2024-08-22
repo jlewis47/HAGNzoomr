@@ -10,3 +10,5 @@ saves some intermediate files so re-runs are faster (beware can eat up disk spac
 
 parameters in .nml and .pbs files can be ajusted in make_zoom.py
 must be pointed to ICs at different levels, and a template .nml file (not provided!)
+
+make_zoom_sph.py old version of routines (only one possible geometry)
